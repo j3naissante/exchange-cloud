@@ -1,0 +1,1 @@
+Set-UnifiedGroup -Identity "group name" -PrimarySmtpAddress "newemail"

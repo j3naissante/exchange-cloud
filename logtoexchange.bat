@@ -1,0 +1,3 @@
+@echo off
+echo Launching PowerShell to connect to Exchange Online...
+powershell -NoExit -Command "Connect-ExchangeOnline"
