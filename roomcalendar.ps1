@@ -1,46 +1,41 @@
-# -------------------------------
-# Ruumikalendri Loomise Skript
-# -------------------------------
 
-
-# 1. Muutujad
-$RoomName = ""                       # Kuvatav nimi
+# 1. Variables
+$RoomName = ""                       # Name
 $RoomAlias = ""                      # Alias
-$RoomEmail = ""      # Primaarsmtp
-$ManagerGroup = ""     # Grupp, kes haldab ja näeb kalendrit
+$RoomEmail = ""      # Primary SMTP
+$ManagerGroup = ""     # Group who manages the calendar 
 
-# 2. Kontrolli, kas postkast juba olemas
+# 2.  Check if the mailbox already exists
 if (Get-Recipient -Identity $RoomAlias -ErrorAction SilentlyContinue) {
-    Write-Host "Postkast $RoomAlias juba olemas. Skript lõpetatakse..." -ForegroundColor Red
+    Write-Host "Mailbox $RoomAlias exists. Quitting..." -ForegroundColor Red
     return
 }
 
-# 3. Loo ruumipostkast
+# 3. Create room
 New-Mailbox -Room -Name $RoomName -Alias $RoomAlias -DisplayName $RoomName
 Set-Mailbox -Identity $RoomAlias -PrimarySmtpAddress $RoomEmail
 
-# 4. Määra ainult juhtkonna grupile õigused
-# Lisa Full Access juhtkonna grupile
+# 4. Assign permissions only to the management group
 Add-MailboxPermission -Identity $RoomAlias -User $ManagerGroup -AccessRights FullAccess -InheritanceType All
 
-# Eemalda kõik teised Full Access õigused
+# Remove Full Access permissions from everyone else
 Get-MailboxPermission -Identity $RoomAlias | Where-Object {
     ($_.User -notlike "NT AUTHORITY\SELF") -and ($_.User -notlike $ManagerGroup)
 } | ForEach-Object {
     Remove-MailboxPermission -Identity $RoomAlias -User $_.User -AccessRights FullAccess -Confirm:$false
 }
 
-# Lisa SendAs õigused juhtkonna grupile
+# Grant SendAs permissions to the management group
 Add-RecipientPermission -Identity $RoomAlias -Trustee $ManagerGroup -AccessRights SendAs
 
-# Eemalda SendAs õigused teistelt
+# Remove SendAs permissions from everyone else
 Get-RecipientPermission -Identity $RoomAlias | Where-Object {
     ($_.Trustee -notlike $ManagerGroup)
 } | ForEach-Object {
     Remove-RecipientPermission -Identity $RoomAlias -Trustee $_.Trustee -AccessRights SendAs -Confirm:$false
 }
 
-# 5. Konfigureeri automaatne broneerimine ainult juhtkonna grupile
+# 5.  Configure automatic booking for the management group only
 Set-CalendarProcessing -Identity $RoomAlias `
     -AutomateProcessing AutoAccept `
     -AllBookInPolicy $false `
@@ -50,8 +45,8 @@ Set-CalendarProcessing -Identity $RoomAlias `
     -AllowConflicts $false `
     -BookingWindowInDay 180
 
-# 6. Kontroll
-Write-Host "Privaatne ruumikalender loodud edukalt!" -ForegroundColor Green
+# 6. Verification
+Write-Host "Room calendar created successfully" -ForegroundColor Green
 Get-Mailbox -Identity $RoomAlias | Format-List Name,Alias,PrimarySmtpAddress,RecipientTypeDetails,HiddenFromAddressListsEnabled
 Get-MailboxPermission -Identity $RoomAlias
 Get-RecipientPermission -Identity $RoomAlias
