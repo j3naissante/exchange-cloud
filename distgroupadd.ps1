@@ -1,4 +1,4 @@
-# Define the distribution group
+﻿# Define the distribution group
 $DG = ""
 
 # Import users from the txt file

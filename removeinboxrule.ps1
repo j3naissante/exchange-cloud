@@ -1,5 +1,5 @@
 # Path to file containing user accounts (one per line, UPN or email)
-$UserList = "txtfile"
+$UserList = ""
 
 # Read user accounts
 $Users = Get-Content $UserList
