@@ -1,0 +1,14 @@
+Connect-ExchangeOnline
+
+Get-MailboxFolderPermission -Identity "TOM-Sundmused@opetajatemaja.ee:\Kalender" | Format-List
+Set-MailboxFolderPermission -Identity "user@domain.com:\Kalender" -User "user@domain.com" -AccessRights Reviewer
+Add-MailboxFolderPermission -Identity "user@domain.com:\Kalender" -User "user@domain.com" -AccessRights Reviewer
+
+-AccessRights Reviewer
+-AccessRights Editor
+-AccessRights LimitedDetails
+-AccessRights AvailabilityOnly
+-AccessRights Author
+
+
+
